@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-
+import os
 win_name = 'track'
 win_size = 950
 radius = 50
@@ -26,7 +26,7 @@ BLUE = (255, 0, 0)
 
 font = cv2.FONT_HERSHEY_SIMPLEX
 
-smiley = cv2.imread('./smiley.png')
+smiley = cv2.imread(os.path.dirname(__file__)+'/smiley.png')
 smiley_mask = np.zeros(smiley.shape)
 smiley_width = smiley.shape[1]
 smiley_height = smiley.shape[0]
