@@ -88,31 +88,36 @@ button = Button(ax_button, 'Aggiorna')
 button.on_clicked(update_xlim)
 
 # Inizializzazione dei dati
-x_data = np.arange(3000)  # 100 punti dati
-y_data = np.zeros(3000)   # Inizializza i dati a zero
+x_data = np.arange(393216)  # 393216 è la dimension edell'array che mi arriva
+y_data = np.zeros(393216)   # Inizializza i dati a zero
 
 # Inizializzazione dei dati
-x_data2 = np.arange(3000)  # 100 punti dati
-y_data2 = np.zeros(3000)   # Inizializza i dati a zero
+x_data2 = np.arange(393216)  
+y_data2 = np.zeros(393216)   
 
 # Inizializzazione dei dati
-x_data3 = np.arange(3000)  # 100 punti dati
-y_data3 = np.zeros(3000)   # Inizializza i dati a zero
+x_data3 = np.arange(393216)  
+y_data3 = np.zeros(393216)  
 
 while True:
-    # Leggi i dati dal DCA1000
-    adc_data = dca.read()
+    try:
+        # Leggi i dati dal DCA1000
+        adc_data = dca.read()
+    except TimeoutError:
+        print("LETTURA TERMINATA")
+        break
 
     # Applica la FFT utilizzando range_processing
     radar_cube = mm.dsp.range_processing(adc_data)
+    
     # Applica la FFT2 utilizzando range_processing
     radar_cube2 = mm.dsp.range_processing(radar_cube)
     
     if adc_data is not None:
         # Aggiorna i dati
-        y_data = adc_data[:3000]/100  # Supponiamo che adc_data sia un array di almeno 100 elementi
-        y_data2 = np.abs(radar_cube[:3000]/1000)
-        y_data3 = np.abs(radar_cube2[:3000]/1000)
+        y_data = adc_data[:393216]/100  #divido gli elementi dentro l'array per scalarli
+        y_data2 = np.abs(radar_cube[:393216]/1000)
+        y_data3 = np.abs(radar_cube2[:393216]/1000)
 
         # Aggiorna il grafico
         line.set_ydata(y_data)
@@ -130,13 +135,3 @@ while True:
         fig.canvas.flush_events()
     else:
         print("Nessun dato ricevuto.")
-
-    
-    # Ora puoi applicare un'altra FFT sull'output di 'range_processing', ad esempio su un'altra dimensione
-    # Se volessi fare una FFT su un'altra dimensione, per esempio sugli assi dei chirp o delle antenne:
-    #fft_on_radar_cube = np.fft.fft(radar_cube, axis=0)  # FFT lungo l'asse dei chirp
-    # Oppure, se vuoi applicarla lungo l'asse delle antenne
-    #fft_on_radar_cube_antennas = np.fft.fft(radar_cube, axis=1)  # FFT lungo l'asse delle antenne
-
-    #adc_data = adc_data.reshape(300, -1)
-    #frame = dca.organize(adc_data, 128, 4, 500) #num_chirps=NUM_CHIRPS*2 num_rx=NUM_RX num_samples=NUM_ADC_SAMPLES
