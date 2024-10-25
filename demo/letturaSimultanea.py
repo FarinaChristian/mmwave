@@ -76,7 +76,7 @@ def avviaCattura(val):
             line3.set_ydata(y_data3)
             line3.set_xdata(x_data3)
 
-            fig.canvas.draw()
+            fig.canvas.blit(fig.bbox)
             fig.canvas.flush_events()
         else:
             print("Nessun dato ricevuto.")
@@ -158,7 +158,7 @@ x_data = np.arange(393216)  # 393216 è la dimension edell'array che mi arriva
 y_data = np.zeros(393216)   # Inizializza i dati a zero
 
 # Inizializzazione dei dati
-x_data2 = np.arange(393216)  
+x_data2 = np.arange(393216) #np.fft.fftfreq(393216,d=1/10000) 
 y_data2 = np.zeros(393216)   
 
 # Inizializzazione dei dati
@@ -167,6 +167,5 @@ y_data3 = np.zeros(393216)
 
 fig.canvas.draw()
 plt.show()
-
 
 
