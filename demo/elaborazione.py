@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.signal import butter, lfilter
+from scipy.signal import butter, lfilter, sosfilt
 import mmwave as mm
 import mmwave.dsp as dsp
 from mmwave.dataloader import DCA1000
@@ -14,10 +14,10 @@ VIRT_ANT = 8
 
 # Data specific parameters
 NUM_CHIRPS = 128
-NUM_ADC_SAMPLES = 128
+NUM_ADC_SAMPLES = 500
 RANGE_RESOLUTION = .0488
 DOPPLER_RESOLUTION = 0.0806
-NUM_FRAMES = 250
+NUM_FRAMES = 1000
 
 # DSP processing parameters
 SKIP_SIZE = 4
@@ -40,12 +40,12 @@ def bandpass_filter(data, lowcut, highcut, fs, order=5):
     y = lfilter(b, a, data)
     return y
 
-adc_data = np.fromfile('destra_sinistra.bin', dtype=np.uint16)    
+
+adc_data = np.fromfile('camminata.bin', dtype=np.uint16)   
 adc_data = adc_data.reshape(NUM_FRAMES, -1)
 #divido i segnali arrivati, all_data è un array di array tridimensionali
-all_data = np.apply_along_axis(DCA1000.organize, 1, adc_data, num_chirps=NUM_CHIRPS*2, num_rx=NUM_RX, num_samples=NUM_ADC_SAMPLES)
-
-fs = 10000.0  # Frequenza di campionamento della scheda 
+all_data = np.apply_along_axis(DCA1000.organize, 1, adc_data, num_chirps=NUM_CHIRPS, num_rx=NUM_RX, num_samples=NUM_ADC_SAMPLES)
+fs = 8.33  # Frequenza di campionamento della scheda 
 filtrati=[]   #contiene i segnali filtrati, è un array di array
 magazzino=[]  #conterrè le trasformate dei singoli segnali filtrati, è un array di array
 # Specifiche del filtro passa banda, sono i valori per i battiti
@@ -53,8 +53,8 @@ lowcut = 0.8 #Hz
 highcut = 4 #Hz
 
 '''STRUTTURA DI UN FRAME:
-       Sono 250 frame, un frame è un array tridimensionale e contiene 256 matrici (penso sia perchè 128*2=256).
-       Ogni matrice contiene 4 array di lunghezza 128, questi array dovrebbero essere i segnali da analizzare.
+       Ci sono NUM_FRAMES frame, un frame è un array tridimensionale e contiene 128 matrici (NUM_CHIRPS).
+       Ogni matrice contiene 4 array (è il numero di antenne) di lunghezza NUM_ADC_SAMPLES. Questi array dovrebbero essere i segnali da analizzare.
        [ [ [2,5,....,70]  [ [2,5,....,70]  [ [2,5,....,70]      [ [2,5,....,70]      
            [2,5,....,70]    [2,5,....,70]    [2,5,....,70] .....  [2,5,....,70]
            [2,5,....,70]    [2,5,....,70]    [2,5,....,70]        [2,5,....,70]
@@ -69,25 +69,6 @@ for frame in all_data:
             #eseguo la trasformata del segnale nel frame
             fft_signal=radar_cube = mm.dsp.range_processing(filtered_sig)#è monodimensionale
             magazzino.append(fft_signal)
-
-'''for frame in all_data:
-    # Variabili temporanee per ciascun frame
-    segnali_filtrati_frame = []
-    segnali_trasformati_frame = []
-
-    # Ciclo per ogni matrice nel frame (senza scendere a livello di segnale individuale)
-    for matrice in frame:
-        # Applica il filtro e la trasformata a tutti i segnali della matrice
-        segnali_filtrati_matrice = [bandpass_filter(segnale, lowcut, highcut, fs) for segnale in matrice]
-        segnali_trasformati_matrice = [mm.dsp.range_processing(sig) for sig in segnali_filtrati_matrice]
-
-        # Aggiunge i risultati della matrice al frame
-        segnali_filtrati_frame.extend(segnali_filtrati_matrice)
-        segnali_trasformati_frame.extend(segnali_trasformati_matrice)
-
-    # Aggiunge i risultati del frame completo alle liste finali
-    filtrati.extend(segnali_filtrati_frame)
-    magazzino.extend(segnali_trasformati_frame)'''
 
 # Visualizzare il segnale originale e quello filtrato
 plt.figure(figsize=(10, 8)) 
